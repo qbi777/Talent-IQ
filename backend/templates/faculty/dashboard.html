@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Faculty Assessment Control Portal | Talent IQ{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-apple-border/40">
+        <div>
+            <h1 class="text-3xl font-bold tracking-tight text-apple-text">Faculty Evaluation Portal</h1>
+            <p class="text-apple-secondary text-sm mt-1">Manage assessment rubrics, oversee AI proctored sessions, and review candidate integrity.</p>
+        </div>
+        <div class="flex space-x-2">
+            <a href="/admin/examinations/examination/add/" class="px-4 py-2 rounded-xl bg-apple-blue hover:bg-apple-hover text-white text-xs font-semibold shadow-xs transition-colors">
+                + Create New Exam
+            </a>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div class="bg-white p-5 rounded-2xl border border-apple-border/60 shadow-2xs">
+            <span class="text-xs text-apple-secondary block uppercase font-medium">Faculty Evaluators</span>
+            <span class="text-3xl font-bold text-apple-text mt-1 block">{{ total_faculty }}</span>
+            <span class="text-xs text-emerald-600 font-medium mt-2 block">&bull; Verified across departments</span>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-apple-border/60 shadow-2xs">
+            <span class="text-xs text-apple-secondary block uppercase font-medium">Active Integrity Engine</span>
+            <span class="text-3xl font-bold text-apple-blue mt-1 block">Live</span>
+            <span class="text-xs text-apple-secondary font-medium mt-2 block">&bull; Camera, gaze & audio monitoring</span>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-apple-border/60 shadow-2xs">
+            <span class="text-xs text-apple-secondary block uppercase font-medium">Drive Reports</span>
+            <span class="text-3xl font-bold text-apple-text mt-1 block">Auto-Sync</span>
+            <span class="text-xs text-apple-secondary font-medium mt-2 block">&bull; Google Sheets synchronization</span>
+        </div>
+    </div>
+
+    <!-- Faculty Roster -->
+    <div class="bg-white rounded-2xl border border-apple-border/60 shadow-2xs overflow-hidden">
+        <div class="px-6 py-4 border-b border-apple-border/40 flex items-center justify-between">
+            <h3 class="font-semibold text-apple-text text-sm">Faculty Members & Evaluators</h3>
+            <span class="text-xs text-apple-secondary">Showing recent</span>
+        </div>
+        <div class="divide-y divide-apple-border/30">
+            {% for fac in faculty_list %}
+            <div class="p-4 sm:px-6 flex items-center justify-between hover:bg-apple-bg/50 transition-colors">
+                <div>
+                    <h4 class="font-semibold text-sm text-apple-text">{{ fac.user.get_full_name|default:fac.user.username }}</h4>
+                    <p class="text-xs text-apple-secondary">{{ fac.designation }} &bull; Department of {{ fac.department }} &bull; {{ fac.college.name }}</p>
+                </div>
+                <div class="text-right">
+                    <span class="text-xs px-2.5 py-1 rounded-full bg-blue-50 text-apple-blue font-medium border border-blue-100">
+                        {{ fac.employee_id }}
+                    </span>
+                </div>
+            </div>
+            {% empty %}
+            <div class="p-8 text-center text-apple-secondary text-sm">
+                No faculty members registered. Add faculty via <a href="/admin/faculty/facultyprofile/add/" class="text-apple-blue underline">Django Admin</a>.
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

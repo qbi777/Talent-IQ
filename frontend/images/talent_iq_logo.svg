@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="appleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0071e3" />
+      <stop offset="100%" stop-color="#5856d6" />
+    </linearGradient>
+    <filter id="appleShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#0071e3" flood-opacity="0.25" />
+    </filter>
+  </defs>
+  <!-- Apple Squircle Card -->
+  <rect x="20" y="20" width="160" height="160" rx="42" fill="url(#appleGrad)" filter="url(#appleShadow)" />
+  <!-- Talent IQ Emblem: Modern Intellect & Spark -->
+  <path d="M100 52 L109 84 L141 93 L109 102 L100 134 L91 102 L59 93 L91 84 Z" fill="#ffffff" opacity="0.95" />
+  <circle cx="100" cy="93" r="8" fill="#0071e3" opacity="0.3" />
+  <circle cx="138" cy="62" r="4" fill="#ffffff" opacity="0.8" />
+  <circle cx="62" cy="128" r="3" fill="#ffffff" opacity="0.7" />
+  <text x="100" y="162" text-anchor="middle" fill="#ffffff" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif" font-weight="700" font-size="16" letter-spacing="1">TALENT IQ</text>
+</svg>

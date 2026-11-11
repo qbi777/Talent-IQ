@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}{{ college.name }} | Talent IQ{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="bg-white rounded-3xl border border-apple-border/60 p-6 sm:p-8 shadow-xs">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-apple-border/40">
+            <div>
+                <div class="flex items-center space-x-2 mb-2">
+                    <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-50 text-apple-blue border border-blue-100">
+                        {{ college.college_type }}
+                    </span>
+                    <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">
+                        NAAC {{ college.naac_grade }}
+                    </span>
+                    {% if college.nirf_rank %}
+                    <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-100">
+                        NIRF #{{ college.nirf_rank }}
+                    </span>
+                    {% endif %}
+                </div>
+                <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-apple-text">{{ college.name }}</h1>
+                <p class="text-sm text-apple-secondary mt-1">Code: {{ college.code }} &bull; {{ college.city }}, {{ college.district }} &bull; Estd. {{ college.established }}</p>
+            </div>
+            {% if college.website %}
+            <a href="{{ college.website }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-apple-bg hover:bg-apple-border/40 text-xs font-semibold text-apple-text transition-colors border border-apple-border/60">
+                <span>Official Website</span>
+                <svg class="w-3.5 h-3.5 text-apple-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+            </a>
+            {% endif %}
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+            <div class="p-4 rounded-2xl bg-apple-bg border border-apple-border/40">
+                <span class="text-xs text-apple-secondary block">Assessed Candidates</span>
+                <span class="text-2xl font-bold text-apple-text mt-1 block">{{ college.total_students_assessed }}</span>
+            </div>
+            <div class="p-4 rounded-2xl bg-apple-bg border border-apple-border/40">
+                <span class="text-xs text-apple-secondary block">Cohort Average</span>
+                <span class="text-2xl font-bold text-apple-blue mt-1 block">{{ college.average_score }}%</span>
+            </div>
+            <div class="p-4 rounded-2xl bg-apple-bg border border-apple-border/40">
+                <span class="text-xs text-apple-secondary block">District</span>
+                <span class="text-base font-semibold text-apple-text mt-1 block">{{ college.district }}</span>
+            </div>
+            <div class="p-4 rounded-2xl bg-apple-bg border border-apple-border/40">
+                <span class="text-xs text-apple-secondary block">Public Ranking</span>
+                <span class="text-sm font-semibold text-emerald-600 mt-1 block">Active</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

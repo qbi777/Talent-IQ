@@ -1,0 +1,1179 @@
+# Complete product blueprint: College assessment SaaS platform
+
+Based on everything we've discussed, I recommend building this as a multi-college online assessment platform, with Django as the main backend, React as the frontend, PostgreSQL as the primary database, and Google Drive integration for faculty-owned documents and reports.
+
+The goal is to create one reliable platform where colleges can conduct examinations, assess students, review results, monitor potential malpractice, and compare their performance with other colleges.
+
+I'll organize this into features, how each feature should work, recommended technologies, and the development instructions. This can become the foundation for your eventual master prompt for an AI coding model or development team.
+
+## 1. Overall technology stack
+
+## Recommended architecture
+
+Frontend — React + TypeScript
+
+Student portal · Faculty dashboard · Public website · Admin panel
+
+Backend — Python Django + Django REST Framework
+
+Authentication · APIs · Permissions · Exam management · Business logic
+
+PostgreSQL
+
+Main application database
+
+Redis + Celery
+
+Background jobs and queues
+
+AI services
+
+Speech and answer evaluation
+
+Google APIs
+
+Faculty Drive, Docs and Sheets
+
+### Full technology list
+
+| Area                      | Recommended technology            | Purpose                                |
+| ------------------------- | --------------------------------- | -------------------------------------- |
+| Frontend                  | React.js + TypeScript             | User interface                         |
+| UI styling                | Tailwind CSS                      | Responsive design                      |
+| UI components             | shadcn/ui                         | Consistent interface components        |
+| Maps                      | Leaflet + OpenStreetMap           | Tamil Nadu district map                |
+| Backend                   | Python Django                     | Main application                       |
+| API                       | Django REST Framework             | Frontend/backend communication         |
+| Database                  | PostgreSQL                        | Permanent application data             |
+| Cache and queue           | Redis                             | Fast temporary storage and task queues |
+| Background processing     | Celery                            | AI evaluation and report generation    |
+| Real-time updates         | Django Channels, optionally       | Live exam status and updates           |
+| File/document integration | Google Drive API                  | Faculty-owned file storage             |
+| Document generation       | Google Docs API                   | Exam question documents                |
+| Result reports            | Google Sheets API                 | Results and rank lists                 |
+| Audio recording           | Browser MediaRecorder API         | Student voice recordings               |
+| Speech-to-text            | faster-whisper                    | Convert audio into text                |
+| Audio analysis            | librosa + Silero VAD              | Speech and silence analysis            |
+| AI answer evaluation      | Ollama + a suitable local LLM     | Evaluate descriptive responses         |
+| Face detection            | MediaPipe                         | Basic face-presence monitoring         |
+| Automated tests           | Pytest + Django test tools        | Backend testing                        |
+| Frontend tests            | Vitest + Playwright               | UI and browser testing                 |
+| Deployment                | Docker                            | Package application services           |
+| Hosting                   | Google Cloud Run or equivalent    | Host application                       |
+| Database hosting          | Managed PostgreSQL                | Reliable production database           |
+| Error monitoring          | Sentry                            | Find production errors                 |
+| Server monitoring         | Prometheus + Grafana, when needed | Performance monitoring                 |
+| CI/CD                     | GitHub Actions                    | Automated testing and deployment       |
+
+Important: Open-source software can reduce licensing costs, but hosting, storage, processing, bandwidth, and backups may still cost money. We should also test Indian English speech recognition and AI scoring before using them for official marks.
+
+## 2. User types and permissions
+
+The platform should have four main user types.
+
+1\. Super Admin — Your company
+
+- Creates and manages colleges.
+- Generates unique college IDs.
+- Creates faculty accounts.
+- Activates or deactivates accounts.
+- Monitors platform usage and technical errors.
+- Manages public college listings and approved rankings.
+
+  2\. College / Institution
+- Has a unique college identity.
+- Has faculty accounts assigned to it.
+- Can view institution-level reports if this permission is enabled.
+- Cannot access another college's private student records.
+
+  3\. Faculty
+- Logs in with credentials supplied by the administrator.
+- Connects their own Google account.
+- Creates examinations and questions.
+- Generates test links.
+- Views results, rankings, and malpractice review evidence.
+- Downloads or accesses reports saved to their Drive.
+
+  4\. Student
+- Opens the examination link.
+- Enters name and roll number.
+- Reads instructions.
+- Takes the exam.
+- Submits answers.
+- Receives a result if the faculty has enabled student result visibility.
+
+Access rule: Every record must be connected to the correct college, faculty, and examination. A faculty member must never be able to access another faculty member's private examination data just by changing an ID in the browser or API request.
+
+## 3. Public website and Tamil Nadu college map
+
+[Chennai TNEA colleges | anna.university](https://images.openai.com/static-rsc-4/hteAhEULk0Gorl7snW_gSKpdBqCUapfJBS3gRGp4MEbTVR-EDJc1Qi4TfghnwvTl5P1ay9PJ51_5OLJpAXroXsuaTaNk6sVWuaUm5B2A2y89X5P_XACNoAJ90OMu6bwYXH8Dr2uGYTndxwYm9PT95bh8UA7damxDb3YugUe8BBk?purpose=inline)
+
+[anna.university](https://anna.university/districts/chennai?utm_source=chatgpt.com)
+
+Purpose: Allow visitors to explore participating colleges and see the platform's college-level performance.
+
+### Required features
+
+1. Homepage with a Tamil Nadu map.
+2. District selection, including Chennai, Coimbatore, Madurai, Tiruchirappalli, Thoothukudi, Kanyakumari and other districts.
+3. Selecting a district displays the colleges in that district.
+4. Selecting a college displays its public profile.
+5. Display participating colleges and their approved assessment performance.
+6. Show a leaderboard or ranking when there is enough verified data.
+
+### Technical implementation
+
+- Leaflet.js: Interactive map.
+- OpenStreetMap: Map tiles.
+- React: District and college selection.
+- PostgreSQL: College names, district, location and public profile.
+- Django REST Framework: APIs for retrieving colleges and rankings.
+
+### Important ranking rules
+
+Initially, use clearly labelled demo college data. Do not present invented names, scores or rankings as actual college performance.
+
+When the platform goes live:
+
+- Include only colleges that have agreed to participate in public rankings.
+- Compare colleges using a consistent assessment and scoring method.
+- Display the number of students assessed and the assessment period.
+- Avoid publishing individual student names or marks on the public website.
+- Do not rank a college based on a very small or unrepresentative sample.
+
+## 4. College and faculty account management
+
+Purpose: Your company controls who can use the platform.
+
+### How it should work
+
+1. Super Admin logs into the administration panel.
+2. Creates a college record.
+3. System generates a unique college ID, such as `COL001`.
+4. Admin creates faculty accounts under that college.
+5. Each faculty account gets a unique ID, such as `FAC001`.
+6. Admin supplies initial login credentials or sends an invitation.
+7. Faculty logs in and changes their temporary password.
+8. Admin can disable accounts, reset access and update faculty assignments.
+
+Example:
+
+| College                 | College ID | Faculty accounts |
+| ----------------------- | ---------- | ---------------- |
+| ABC Engineering College | COL001     | FAC001, FAC002   |
+| XYZ Arts College        | COL002     | FAC003, FAC004   |
+
+### Technologies
+
+- Django Authentication
+- Django Groups and Permissions
+- PostgreSQL
+- Django Admin
+- Email integration for invitations and password resets
+
+Development instruction: Never store plain-text passwords. Use Django's password hashing. Enforce permissions on the backend, not just by hiding buttons in React.
+
+## 5. Faculty dashboard
+
+[CBSE AI Assessment Suite for Teacher · Built with Blink](https://images.openai.com/static-rsc-4/NBbIrZfSbp5zyi4EeRxWRhHCnIXq8HwYEp49Qc39yZjuB5KrNZ5Mry9jE0As7nYBoe2c8pQ3bsKLzbFoWhnNsp67ft6ur9gxfDjeP8hPmT9hqO91PDqQ8RYkQrrEQ27cfrAA_WPFIoqij-AyiWk5J1g7_VfSqA0lf9XIzJo6-LA?purpose=inline)
+
+[blink.new](https://blink.new/p/cbse-ai-assessment-teacher-dashboard-8jx3dxzw?utm_source=chatgpt.com)
+
+After login, faculty should see a simple dashboard.
+
+### Dashboard components
+
+- Welcome message and faculty profile.
+- College name.
+- Google Drive connection status.
+- Create New Examination button.
+- List of previously created examinations.
+- Total examinations conducted.
+- Total students assessed.
+- Recent results.
+- Top-performing students for each examination.
+- Search and filter options.
+
+### Examination list
+
+Each examination should show:
+
+| Field              | Example                    |
+| ------------------ | -------------------------- |
+| Examination name   | English Communication Test |
+| Date               | 11 November 2026           |
+| Subject            | English                    |
+| Students attempted | 85                         |
+| Status             | Completed                  |
+| Results            | View Results               |
+| Report             | Open Google Sheet          |
+
+Faculty should be able to search by examination name, date and subject.
+
+### Technologies
+
+React, TypeScript, Tailwind CSS, Django REST Framework, PostgreSQL and Chart.js or Recharts for charts.
+
+## 6. Google Drive connection
+
+Core feature
+
+This is an important part of your platform because each faculty member should own their generated examination documents and reports.
+
+[How My Wife and I Do Our Year-End Financial Reset (and What 2025 Taught Us) — The FI Professor](https://images.openai.com/static-rsc-4/T7tBDL71oTA8tuPExD3WJwyWY49WVwiKRgyCXdiFNd0uZMjcigvkviFGGNkWeRSBhkxz8gqSyrgq0CJvhEcQtNRD0PgcYm57fNH5nfG8P8pjbc14m_sDVv-6S2gEQo-ReCONy-Q13IgtHnqXhHmpn2OIBJRoQXNTbAXbZVhQ100?purpose=inline)
+
+[thefiprof.com](https://www.thefiprof.com/blog-1-1/how-my-wife-and-i-do-our-year-end-financial-reset-and-what-2025-taught-us?utm_source=chatgpt.com)
+
+### How it should work
+
+Step 1 — Connect Google Drive
+
+Faculty clicks `Connect Google Drive`.
+
+The application opens Google's OAuth consent screen. Faculty signs in using their own Google account and authorizes the required access.
+
+Step 2 — Create faculty folder
+
+The application creates a folder structure in that faculty member's Drive.
+
+Example:
+
+```
+My Drive
+└── College Assessment Platform
+    └── English Department
+        ├── English Communication Test
+        │   ├── Question Paper
+        │   ├── Results
+        │   └── Evidence
+        │
+        ├── Python Assessment
+        │   ├── Question Paper
+        │   ├── Results
+        │   └── Evidence
+        │
+        └── Communication Skills Test
+```
+
+Step 3 — Save examination files
+
+When faculty creates an examination, the application automatically creates the relevant files in that faculty's Drive.
+
+Step 4 — Save student reports
+
+After evaluation, the application updates the corresponding Google Sheets workbook.
+
+### Technologies
+
+- Google OAuth 2.0
+- Google Drive API
+- Google Docs API
+- Google Sheets API
+- Python Google API client libraries
+- Encrypted token storage on the Django backend
+
+### Essential security instruction
+
+Every Google connection must be associated with the authenticated faculty account in PostgreSQL.
+
+For example:
+
+```
+FAC001 → Faculty A's Google OAuth tokens
+FAC002 → Faculty B's Google OAuth tokens
+```
+
+When Faculty A creates an examination, the backend must use Faculty A's authorized Drive connection. Never use a shared company Google account to save all faculty files.
+
+Use the minimum OAuth permissions necessary. Encrypt refresh tokens, support account disconnection and revocation, and handle expired or revoked authorization gracefully.
+
+My recommendation: Keep PostgreSQL as the main application database. Google Drive should be the faculty-owned document and reporting storage. Do not use Google Sheets as the live database for student submissions.
+
+## 7. Examination creation system
+
+Core feature
+
+This is the main feature faculty will use regularly.
+
+[Trenning - Creating Multiple Questions for a Quiz in SaaS LMS by Bagus Fikri for Fikri Studio on Dribbble](https://images.openai.com/static-rsc-4/vLFgQQyw1Eg8_5Fkwfhv1Ar-vZeBcNqATDIuWIU1ha_8Z10ZcD2kAvu41G-cNbyBwpeiqxPpqU3HluZlhNbkVlIBwT4mToYtjRzHU5V-fREXn-eks2DI9RbvY3-QNeS3cOGgmJMI803Py-CL5QvKkxvWTYkfLJ8WC_G7L0VgjkY?purpose=inline)
+
+[dribbble.com](https://dribbble.com/shots/25554728-Trenning-Creating-Multiple-Questions-for-a-Quiz-in-SaaS-LMS?utm_source=chatgpt.com)
+
+### Faculty examination creation workflow
+
+1. Faculty clicks `Create New Examination`.
+2. Enters the examination name.
+3. Selects the subject or category.
+4. Sets the date and examination duration.
+5. Adds questions.
+6. Sets marks for each question.
+7. Sets instructions and attempt limits.
+8. Previews the examination.
+9. Saves the examination.
+10. Application creates the question document in the faculty's Google Drive.
+11. Application generates a unique examination link.
+
+### Supported question types
+
+| Question type        | How it works                                                        |
+| -------------------- | ------------------------------------------------------------------- |
+| Multiple choice      | Student selects one or more options, according to question settings |
+| Short answer         | Student enters a short text response                                |
+| Descriptive answer   | Student writes a longer response                                    |
+| Image-based question | Question includes an image                                          |
+| Audio response       | Student records and submits their voice                             |
+| Situational question | Student explains what they would do in a given situation            |
+| Programming question | Student writes code or answers programming questions                |
+
+We can introduce question types gradually. The first release should prioritize MCQ, text, image and audio questions.
+
+### Question data format
+
+Questions should be stored as structured records in PostgreSQL, with JSON fields for flexible question content and settings.
+
+For example:
+
+```
+{
+  "question_type": "multiple_choice",
+  "question": "Which language is used for Django?",
+  "options": [
+    "Java",
+    "Python",
+    "C++",
+    "PHP"
+  ],
+  "correct_answer": "Python",
+  "marks": 2,
+  "negative_marks": 0
+}
+```
+
+This is an illustrative question structure. The actual database should also store the question's examination ID, order, creator, version and timestamps.
+
+### Document generation
+
+Use Google Docs API to create a question paper containing:
+
+- Examination name.
+- Subject.
+- Duration.
+- Instructions.
+- Questions.
+- Marks for each question.
+
+Save it in the faculty's examination folder.
+
+Important: The Google Doc is a faculty document. The student examination should be rendered from the structured examination data in the application, not loaded from a publicly accessible Google Doc.
+
+## 8. Examination link and student portal
+
+[Modern Online Exam System – Front-End & Web Design :: Behance](https://images.openai.com/static-rsc-4/nK3LXJ_3eTop-RfCgawhmGdF6zO3IOlWJPLrN8PmKFnpckvBQ3e5hD198VotsU2sZ6v7FAkAdTcCUIO3na7LbrkrUrM3JRAU6LGEub1WYxDGiqHyoxmPd1Bd2RQEP6OHFdxf0NQXCwXKiQd_83NeTFofCB0Dea66lhGmz7dh8Kg?purpose=inline)
+
+[behance.net](https://www.behance.net/gallery/207497141/Modern-Online-Exam-System-Front-End-Web-Design?utm_source=chatgpt.com)
+
+### How it works
+
+After the faculty saves an examination, the application generates a unique link.
+
+Example:
+
+```
+https://yourplatform.com/test/EXM8F29K
+```
+
+Faculty can copy and share this link with students.
+
+### Student workflow
+
+1. Student opens the examination link.
+2. Application displays the college and examination name.
+3. Student enters:
+   - Full name.
+   - Roll number.
+4. Student reads the examination instructions.
+5. Student clicks Start Examination.
+6. Timer starts.
+7. Questions appear.
+8. Student answers questions.
+9. Student submits the examination.
+10. Application saves the answers and begins evaluation.
+
+### Student account requirement
+
+For the first version, students do not need permanent accounts. The examination link and name/roll-number entry can provide a simpler experience.
+
+However, implement:
+
+- Unique attempt records.
+- Duplicate roll-number checks within an examination.
+- Configurable attempt limits.
+- Secure, unguessable examination links.
+- Server-side examination start and end times.
+- Submission protection so a student cannot submit twice.
+
+Do not treat name and roll number alone as strong identity verification. For higher-stakes assessments, add a college-approved identity verification method later.
+
+### Technical stack
+
+React, Django REST Framework, PostgreSQL, browser session management and secure random examination tokens.
+
+## 9. Examination interface
+
+The student should see a clean, distraction-free examination screen.
+
+### Interface elements
+
+- Examination title.
+- Countdown timer.
+- Question number.
+- Question text and images.
+- Answer area.
+- Next and Previous buttons.
+- Question navigation.
+- Save status.
+- Submit button.
+
+### Important behaviour
+
+- Save answers periodically and when the student navigates between questions.
+- Preserve answers if the page reloads or the network briefly disconnects.
+- Prevent submission after the server-side deadline.
+- Show a confirmation before final submission.
+- Automatically submit or close the examination when time expires, according to the configured examination rules.
+
+For coding questions, we should later decide whether students will execute code in a secure sandbox. Never execute arbitrary student code directly on the Django application server.
+
+## 10. English speaking assessment
+
+Specialized assessment feature
+
+This feature should evaluate not only what a student says but also how they communicate.
+
+[E-SPK — Evaluación de pronunciación en inglés con IA (3 minutos)](https://images.openai.com/static-rsc-4/tBJRvB3G_BjjIGwJ-dYTFy8pcK3wIFd0R5E7x0P2h_SkVDzqsmGZM6V4aRynZq-4ilxiEZNgAasL0ogo7sV2fm8nlWjuWPXIGe7Mv3YDz_xKqSnxC_LpmaoBskpLn5tMAngd8PcexFCTWwb3xOxViDqLegxCRJimojwgog1l8es?purpose=inline)
+
+[espkcert.com](https://www.espkcert.com/?utm_source=chatgpt.com)
+
+### Proposed examination structure
+
+Three situation-based tasks:
+
+| Task | Difficulty | Situation                                                                                |
+| ---- | ---------- | ---------------------------------------------------------------------------------------- |
+| 1    | Easy       | You lost your railway ticket. Explain how you would ask for assistance at the station.   |
+| 2    | Medium     | You purchased a damaged product. Explain the problem and request a suitable solution.    |
+| 3    | Medium     | You need to organize a college event with limited time and resources. Explain your plan. |
+
+Each task can have a three-minute limit, subject to your final examination rules.
+
+### Recording workflow
+
+1. Student sees the situation.
+2. Student reads the instructions.
+3. Browser requests microphone permission.
+4. Student records their response.
+5. Student can make up to three attempts.
+6. Student listens to the recordings.
+7. Student selects one recording.
+8. Student clicks Submit.
+9. Only the selected recording is evaluated.
+
+Do not automatically select the highest-scoring recording. The student should select which attempt to submit.
+
+### Technologies
+
+| Technology         | Function                               |
+| ------------------ | -------------------------------------- |
+| MediaRecorder API  | Record student voice                   |
+| faster-whisper     | Convert audio into text                |
+| Ollama + local LLM | Evaluate response content              |
+| librosa            | Extract audio features                 |
+| Silero VAD         | Detect speech and silence              |
+| Celery             | Run audio processing in the background |
+
+### Assessment dimensions
+
+A possible 10-mark rubric:
+
+| Category                    | Marks |
+| --------------------------- | ----- |
+| Understanding and relevance | 3     |
+| Grammar                     | 2     |
+| Vocabulary                  | 1     |
+| Fluency                     | 2     |
+| Clarity and intelligibility | 2     |
+| Total                       | 10    |
+
+There is an important technical limitation: speech-to-text alone cannot reliably assess pronunciation. Audio analysis can measure pauses, speaking time and speaking rate, but these are not the same as pronunciation quality.
+
+Therefore:
+
+- Use the transcript to evaluate content, grammar and vocabulary.
+- Use audio features to support fluency assessment.
+- Do not penalize a student's Indian English accent.
+- Mark uncertain pronunciation or clarity scores for faculty review until the scoring model has been validated.
+- Do not interpret speech-recognition mistakes as student grammar mistakes.
+
+### AI evaluation output
+
+The AI service should return structured data, for example:
+
+```
+{
+  "relevance_score": 2.5,
+  "grammar_score": 1.5,
+  "vocabulary_score": 0.8,
+  "fluency_score": 1.5,
+  "clarity_score": null,
+  "total_score": 6.3,
+  "review_required": true,
+  "feedback": [
+    "The response addresses the situation.",
+    "Try using more complete sentences."
+  ]
+}
+```
+
+The total should be calculated from the valid scored categories only, with a clearly defined rule for any category awaiting human review. The example above is illustrative, not a fixed scoring algorithm.
+
+## 11. Automatic evaluation for other questions
+
+Different question types need different evaluation methods.
+
+| Question type        | Evaluation method                                  |
+| -------------------- | -------------------------------------------------- |
+| MCQ                  | Compare answer against answer key                  |
+| Short answer         | Rubric-based AI evaluation                         |
+| Descriptive answer   | AI evaluation against faculty marking rubric       |
+| English speaking     | Transcript and audio analysis                      |
+| Programming          | Test cases in a secure execution environment       |
+| Situational question | AI evaluates relevance, reasoning and completeness |
+
+### Recommended evaluation architecture
+
+Django should send evaluation tasks to Celery workers.
+
+The AI evaluation service should receive:
+
+- Question.
+- Student answer.
+- Expected answer or marking rubric.
+- Maximum marks.
+- Evaluation instructions.
+
+It should return:
+
+- Marks.
+- Reason for the marks.
+- Strengths.
+- Improvement suggestions.
+- Review-required status.
+- Model and rubric version.
+
+Very important: AI-generated marks should be treated as provisional until the faculty-approved validation process establishes that the evaluation is sufficiently reliable for the intended examination.
+
+## 12. Results and Google Sheets generation
+
+[How to Use the RANK Function in Google Sheets: A Comprehensive Guide - Neotech Navigators](https://images.openai.com/static-rsc-4/OnRsoRYBxWC7cQfmFTWQn0AIMCSsDLsBX3jJJuLkY_rmJv-1Fy7O5smvPHnh_bxXcGCdTBdD8CFOLoJOBpOTzFPARa_WaUVLZ4KGkqXC_CTqzIZO5zbDLx3GlxPa82q-tEB_1LGwvrd1GbYdgaC0VNwfxRdN64jsWDq_6ydoW20?purpose=inline)
+
+[neotechnavigators.com](https://neotechnavigators.com/how-to-use-the-rank-function-in-google-sheets-a-comprehensive-guide/?utm_source=chatgpt.com)
+
+After student submissions have been evaluated, the platform should create a Google Sheets workbook in the same faculty Drive folder.
+
+### Workbook naming
+
+The question paper and results workbook should share a common examination name.
+
+Example:
+
+```
+English Communication Test - Question Paper
+English Communication Test - Results
+```
+
+### Sheet 1 — Student Results
+
+| Roll number | Student name | Marks | Percentage | Status    |
+| ----------- | ------------ | ----- | ---------- | --------- |
+| 101         | Student A    | 85    | 85%        | Evaluated |
+| 102         | Student B    | 78    | 78%        | Evaluated |
+| 103         | Student C    | 92    | 92%        | Evaluated |
+
+### Sheet 2 — Rank List
+
+| Rank | Roll number | Student name | Marks |
+| ---- | ----------- | ------------ | ----- |
+| 1    | 103         | Student C    | 92    |
+| 2    | 101         | Student A    | 85    |
+| 3    | 102         | Student B    | 78    |
+
+Define tie handling before implementation. For example, equal marks can receive equal ranks, with the next rank skipped.
+
+### Sheet 3 — Review and malpractice events
+
+| Student   | Event                   | Time     | Review status | Evidence      |
+| --------- | ----------------------- | -------- | ------------- | ------------- |
+| Student A | Tab switched            | 10:12 AM | Pending       | View evidence |
+| Student B | Multiple faces detected | 10:25 AM | Pending       | View evidence |
+
+### Sheet 4 — Examination summary
+
+Include:
+
+- Number of registered attempts.
+- Number of completed attempts.
+- Average marks.
+- Highest marks.
+- Lowest marks.
+- Pass percentage, if a pass threshold is configured.
+- Questions with high error rates.
+- AI evaluations awaiting review.
+
+The application should update the workbook after evaluation is complete. If the Google API is temporarily unavailable, results must remain safe in PostgreSQL and the workbook update should be retried.
+
+## 13. Faculty results dashboard and analytics
+
+[Competitive Exam Intelligence | edumerge | edumerge](https://images.openai.com/static-rsc-4/OgtwSi8tJRlkeRrVMF1UoQ7-ECInTyKIBloVMJSRQ1uVPtLarlPHgUhPH6MKTmVd6xLVAHKFnrU3Iw_K9q7CGLzFpAW4qmUG13jxrXmeukj3g9FyGIQGF_HQ7Rc2gbK9PS_zyUvPJh-wi4fu3PDHsssDCFcmPQqvGbXsOgCblog?purpose=inline)
+
+[edumerge.com](https://www.edumerge.com/products/school-erp/competitive-exam-intelligence?utm_source=chatgpt.com)
+
+Faculty should not need to open Google Sheets every time they want to review an examination.
+
+### Dashboard functions
+
+- First, second and third rank.
+- Top 10 students.
+- Search student by name or roll number.
+- Sort by marks, name and rank.
+- Filter by evaluation status.
+- View each student's answers.
+- View AI feedback.
+- Review evidence.
+- Download or open the Google Sheets report.
+
+### Analytics
+
+Use Recharts or Chart.js to show:
+
+- Marks distribution.
+- Average performance.
+- Question-wise performance.
+- Pass and fail distribution.
+- Comparison between examinations conducted by the same faculty.
+- English speaking skill breakdown, where available.
+
+The faculty dashboard should read from PostgreSQL. Google Sheets is a synchronized report, not the source of live dashboard calculations.
+
+## 14. Malpractice monitoring and evidence collection
+
+Needs careful validation
+
+[The Ultimate Guide to ExamOnline: Mastering the Proctored Review Test in 2025](https://images.openai.com/static-rsc-4/ZPKianykms1FZNtNh_6q-fLm6hhUmaNCOuwlPDS4YS6u3PSTKRzeqgt_jliIPo96va8NwYHHOelvN2NDlyVs9kCIi-7pVHyoV5ny82JeEw_JjkMcrjzOd3Vlm8GKzvpPvuBdQd1JYdy0dXQJLCxT0H9a8NB9YcQx_Ev0wDYrs2Q?purpose=inline)
+
+[skywork.ai](https://skywork.ai/skypage/en/The-Ultimate-Guide-to-ExamOnline-Mastering-the-Proctored-Review-Test-in-2025/1975019395069177856?utm_source=chatgpt.com)
+
+The platform can detect certain suspicious browser and camera events.
+
+### Proposed features
+
+| Feature           | Technology               | What it detects                   |
+| ----------------- | ------------------------ | --------------------------------- |
+| Tab switching     | Page Visibility API      | Student leaves the exam tab       |
+| Fullscreen exit   | Fullscreen API           | Student exits fullscreen          |
+| Face presence     | MediaPipe                | No face detected in camera frame  |
+| Multiple faces    | MediaPipe                | More than one face detected       |
+| Camera permission | Browser MediaDevices API | Camera permission or availability |
+| Event timestamps  | Django + PostgreSQL      | When an event occurred            |
+
+### Evidence workflow
+
+1. Monitoring system detects a configured event.
+2. Application records the event and timestamp.
+3. If permitted, it captures the relevant image evidence.
+4. Evidence is uploaded to a restricted folder in the responsible faculty's Drive.
+5. The application saves the evidence link and event details in PostgreSQL.
+6. The faculty can review the event in the dashboard and workbook.
+
+### Important limitations
+
+A second face in a camera frame does not prove cheating. A missing face does not prove cheating either. A person helping from outside the camera frame may not be detected.
+
+Therefore:
+
+- Treat every event as a review flag, not an automatic accusation.
+- Do not automatically reduce marks based on these events.
+- Inform students about camera use and monitoring before the examination.
+- Obtain appropriate consent and institutional approval.
+- Set clear image retention and deletion policies.
+- Restrict access to evidence and maintain an audit log.
+
+For the first version, I recommend tab-switch detection and basic camera event logging. Add snapshots and face detection only after privacy and operational requirements are agreed.
+
+## 15. Main database design
+
+PostgreSQL should store all essential application records.
+
+Suggested database tables:
+
+| Table                | What it stores                                   |
+| -------------------- | ------------------------------------------------ |
+| `colleges`           | College ID, name, district, status               |
+| `users`              | Login credentials and user identity              |
+| `faculty_profiles`   | Faculty details and college assignment           |
+| `google_connections` | Encrypted Google OAuth tokens                    |
+| `examinations`       | Examination name, duration, settings             |
+| `questions`          | Question text, type, marks, answer configuration |
+| `question_options`   | MCQ choices                                      |
+| `students`           | Student details                                  |
+| `exam_attempts`      | Each student's attempt and status                |
+| `student_answers`    | Answers submitted by students                    |
+| `recordings`         | Audio recording metadata and storage location    |
+| `evaluations`        | Marks, feedback, evaluation status               |
+| `rankings`           | Calculated examination rankings                  |
+| `proctoring_events`  | Monitoring events and timestamps                 |
+| `evidence_files`     | Evidence file metadata and Drive references      |
+| `audit_logs`         | Important user and administrative actions        |
+
+### Important database relationships
+
+```
+College
+  └── Faculty
+       └── Examinations
+            ├── Questions
+            ├── Student Attempts
+            │    ├── Student Answers
+            │    ├── Recordings
+            │    ├── Evaluations
+            │    └── Proctoring Events
+            └── Results and Rankings
+```
+
+The database should enforce these relationships using foreign keys and appropriate constraints.
+
+### Recommended database rules
+
+- Every examination belongs to a faculty member and college.
+- Every question belongs to an examination or reusable question bank.
+- Every attempt belongs to one examination.
+- Every student answer belongs to an attempt and a question.
+- Every evaluation belongs to an answer or attempt.
+- Every Drive file reference belongs to the faculty connection that owns it.
+- Store dates and timestamps consistently in UTC, displaying them in the appropriate local timezone.
+- Use database transactions when accepting final submissions and updating attempt status.
+- Add indexes for frequently searched fields such as college ID, faculty ID, examination ID, roll number and submission status.
+
+One important design decision: Do not use a single JSON file as the entire database. Use relational PostgreSQL tables for important records. Use JSON fields where question types and evaluation settings need flexibility.
+
+## 16. Backend architecture and Django project structure
+
+I recommend a modular monolith initially.
+
+This means one main Django application with clearly separated modules. It is easier to develop, test, deploy and maintain than immediately splitting everything into microservices.
+
+Suggested structure:
+
+```
+college_assessment/
+│
+├── manage.py
+│
+├── config/
+│   ├── settings/
+│   ├── urls.py
+│   ├── asgi.py
+│   ├── wsgi.py
+│   └── celery.py
+│
+├── apps/
+│   ├── colleges/
+│   ├── accounts/
+│   ├── faculty/
+│   ├── examinations/
+│   ├── questions/
+│   ├── students/
+│   ├── submissions/
+│   ├── evaluation/
+│   ├── rankings/
+│   ├── google_drive/
+│   ├── proctoring/
+│   ├── analytics/
+│   └── audit/
+│
+├── services/
+│   ├── google_docs/
+│   ├── google_sheets/
+│   ├── google_drive/
+│   └── ai_evaluation/
+│
+├── tests/
+│
+├── requirements/
+│
+├── Dockerfile
+├── docker-compose.yml
+└── .env.example
+```
+
+### What each Django app does
+
+- `colleges`: College registration, IDs and district information.
+- `accounts`: Authentication, roles and permissions.
+- `faculty`: Faculty profiles and college assignments.
+- `examinations`: Examination creation, settings and links.
+- `questions`: Question creation, question banks and question validation.
+- `students`: Student information.
+- `submissions`: Attempts, answers and final submissions.
+- `evaluation`: Marking and AI evaluation.
+- `rankings`: Ranking calculations and tie handling.
+- `google_drive`: OAuth and Drive integration.
+- `proctoring`: Browser events, camera events and evidence references.
+- `analytics`: Examination statistics and dashboard data.
+- `audit`: Security and administrative activity records.
+
+### Why Django instead of FastAPI as the main backend?
+
+| Requirement                      | Django                | FastAPI                       |
+| -------------------------------- | --------------------- | ----------------------------- |
+| User authentication              | Built in              | Requires additional setup     |
+| Admin panel                      | Built in              | Requires additional setup     |
+| Database ORM                     | Built in              | Usually SQLAlchemy or similar |
+| Database migrations              | Built in              | Usually Alembic               |
+| REST APIs                        | Django REST Framework | Built in API framework        |
+| Large business application       | Very suitable         | Very suitable                 |
+| AI service endpoints             | Suitable              | Particularly convenient       |
+| Rapid administrative development | Excellent             | More manual work              |
+
+My choice remains Django + Django REST Framework for the main application. If the speech-processing workload becomes large, a separate FastAPI service can be introduced later. There is no need to use two backend frameworks from the beginning.
+
+## 17. Background processing and handling many students
+
+This is particularly important if multiple colleges conduct examinations simultaneously.
+
+Suppose 300 students submit an examination at approximately the same time.
+
+The application should not try to process all audio recordings, AI evaluations and Google Sheets updates inside the same HTTP request.
+
+### Recommended workflow
+
+Student submits examination
+
+React student interface
+
+Django API
+
+Validates and accepts submission
+
+PostgreSQL
+
+Permanently saves answers and submission status
+
+Redis + Celery
+
+Queues processing tasks
+
+Evaluation worker
+
+MCQ, text, speech and AI marking
+
+Reporting worker
+
+Google Docs and Sheets updates
+
+Faculty dashboard
+
+Displays processed results and review status
+
+### Technologies
+
+- Celery: background task processing.
+- Redis: task broker and temporary cache.
+- PostgreSQL: permanent data.
+- Django Channels: optional real-time updates.
+- Docker: independent application and worker containers.
+
+### Important reliability requirements
+
+- A student submission must be saved before evaluation starts.
+- Each processing job must be safe to retry.
+- Repeated jobs must not create duplicate marks or duplicate reports.
+- Failed Google API calls must be retried with sensible limits.
+- The faculty dashboard should distinguish `Submitted`, `Processing`, `Evaluated`, `Review Required` and `Failed`.
+- The application should never lose an accepted submission just because an AI service is unavailable.
+
+## 18. Security, privacy and data protection
+
+This is essential because the platform will store student information, recordings, examination answers and potentially camera evidence.
+
+### Required security features
+
+1. HTTPS for all production traffic.
+2. Secure password hashing.
+3. Role-based access control.
+4. College and faculty data isolation.
+5. Encrypted Google OAuth tokens.
+6. Secure examination links.
+7. API rate limiting.
+8. Input validation and protection against common web attacks.
+9. Database backups and tested recovery.
+10. Audit logs for important operations.
+11. Restricted access to recordings and evidence.
+12. Configurable data retention and deletion.
+
+### Multi-tenant security
+
+A college should only access its own information. A faculty member should only access examinations and reports they are authorized to manage.
+
+Enforce tenant restrictions in the Django query and permission layers. PostgreSQL row-level security can also be considered as an additional protection, but it should not replace application authorization.
+
+### Privacy requirements
+
+Before launching:
+
+- Publish a privacy policy and terms of use.
+- Explain what information is collected from students.
+- Explain microphone and camera usage before requesting permission.
+- Define how long recordings and evidence are retained.
+- Provide appropriate deletion and access processes.
+- Obtain institutional approval and any required consent.
+- Review applicable Indian data protection requirements, including the DPDP framework and rules in force at launch.
+
+## 19. Hosting and deployment architecture
+
+For the initial production system, I recommend Docker-based deployment on a managed cloud platform.
+
+Production deployment
+
+Web frontend
+
+React build hosted on a CDN or static hosting service
+
+Django application
+
+Cloud Run or another managed container service
+
+PostgreSQL
+
+Managed database
+
+Redis
+
+Managed queue/cache
+
+Celery workers
+
+Background jobs
+
+AI processing
+
+Separate CPU/GPU capacity as needed
+
+Google APIs
+
+Faculty-owned Drive, Docs and Sheets
+
+### Recommended operational tools
+
+- Docker and Docker Compose for development.
+- GitHub for source control.
+- GitHub Actions for automated tests and deployment.
+- Sentry for application error tracking.
+- Managed PostgreSQL with automated backups.
+- Cloud object storage for temporary or application-owned files, if needed.
+- Prometheus and Grafana when deeper monitoring is required.
+
+Do not assume that a single small server will support hundreds or thousands of simultaneous students. Capacity depends on examination traffic, audio upload sizes, AI workload, database performance and hosting configuration. Conduct load tests using realistic simultaneous users before promising a college a maximum capacity.
+
+## 20. Development roadmap: what to build first
+
+I strongly recommend building this in phases instead of developing every feature simultaneously.
+
+Phase 1 — Core platform
+
+Build first
+
+- Public homepage and Tamil Nadu district map.
+- College registration and unique IDs.
+- Faculty account creation and login.
+- Faculty dashboard.
+- Google Drive OAuth connection.
+- Examination creation.
+- MCQ, text and image questions.
+- Student examination links.
+- Student name and roll-number entry.
+- Timer and answer submission.
+- Automatic MCQ evaluation.
+- Results and rank list.
+- Google Docs and Sheets generation.
+
+  Phase 2 — Advanced assessment
+- English speaking assessment.
+- Audio recording with three attempts.
+- Student-selected recording submission.
+- Speech-to-text.
+- AI answer evaluation.
+- Audio-based fluency analysis.
+- Faculty review of uncertain evaluations.
+
+  Phase 3 — Examination monitoring
+- Tab-switch detection.
+- Fullscreen monitoring.
+- Camera permission and availability events.
+- Face detection.
+- Evidence capture and Drive storage.
+- Faculty malpractice review dashboard.
+
+  Phase 4 — Platform expansion
+- Public college performance rankings.
+- College-level analytics.
+- Question banks and reusable templates.
+- Additional assessment types.
+- Programming assessment with secure code execution.
+- Advanced reporting and institutional dashboards.
+- Capacity scaling and performance optimization.
+
+## 21. Features I would deliberately postpone
+
+These may be useful eventually, but they are not necessary for the first working release:
+
+- Student permanent accounts.
+- Student mobile application.
+- Complex AI-powered proctoring.
+- Automatic cheating accusations.
+- Facial recognition for identity verification.
+- Live video monitoring.
+- Microservices architecture.
+- A complicated question marketplace.
+- Public student-level leaderboards.
+- Advanced AI pronunciation scoring before validation.
+
+This will keep the first release manageable and reduce unnecessary development cost.
+
+## 22. Final instructions for the development team or AI coding model
+
+The following are the architectural rules I would insist on throughout development.
+
+## Non-negotiable development requirements
+
+0 of 18 reviewed
+
+Reset
+
+Build the application as a multi-tenant SaaS platform for multiple colleges.
+
+Use Django and Django REST Framework as the primary backend.
+
+Use React, TypeScript and Tailwind CSS for the frontend.
+
+Use PostgreSQL as the main application database.
+
+Use Redis and Celery for long-running background tasks.
+
+Use Google OAuth so each faculty member connects their own Google Drive.
+
+Never mix documents, reports, recordings or evidence belonging to different faculty accounts.
+
+Store examination questions and student submissions in PostgreSQL.
+
+Generate Google Docs and Google Sheets from the application data.
+
+Make all examination links unique and difficult to guess.
+
+Save student answers reliably before starting AI evaluation.
+
+Make AI evaluation explainable, rubric-based and reviewable by faculty.
+
+Treat proctoring events as indicators requiring human review, not proof of malpractice.
+
+Protect student data and apply appropriate retention and deletion policies.
+
+Use automated tests for authentication, permissions, submissions, evaluation and Google Drive ownership.
+
+Use Docker and environment variables for deployment and secrets management.
+
+Build a modular monolith first; do not introduce microservices without a demonstrated need.
+
+Document APIs, database relationships, installation steps and deployment procedures.
+
+## 23. Recommended final technology choices
+
+Here is the stack I would finalize as the starting point:
+
+| Component           | Final recommendation           |
+| ------------------- | ------------------------------ |
+| Frontend            | React + TypeScript             |
+| Design system       | Tailwind CSS + shadcn/ui       |
+| Maps                | Leaflet + OpenStreetMap        |
+| Backend             | Python Django                  |
+| API                 | Django REST Framework          |
+| Database            | PostgreSQL                     |
+| Background tasks    | Celery                         |
+| Queue and cache     | Redis                          |
+| Realtime features   | Django Channels, when needed   |
+| Audio recording     | MediaRecorder API              |
+| Speech recognition  | faster-whisper                 |
+| Audio processing    | librosa + Silero VAD           |
+| Local AI            | Ollama + suitable LLM          |
+| Face detection      | MediaPipe                      |
+| Documents           | Google Docs API                |
+| Spreadsheets        | Google Sheets API              |
+| Storage integration | Google Drive API               |
+| Deployment          | Docker + managed cloud hosting |
+| Testing             | Pytest + Vitest + Playwright   |
+| Monitoring          | Sentry                         |
+
+
+
+My recommendation
+
+&#x20;Django + React + PostgreSQL + Redis + Celery + Google APIs is the foundation I would choose for this project.
+
+
+
+One final architectural point: keep the core examination platform independent of Google Drive. If a faculty member temporarily disconnects Google, students should still be able to take examinations, submissions should still be saved, and results should still be calculated. Google Docs and Sheets synchronization can resume when the connection is restored.
+
+## 24. What we should finalize before writing the master development prompt
+
+There are five decisions worth confirming. These will affect the database design, security model and student experience.
+
+1\. Where should examination data be stored?
+
+Hybrid — PostgreSQL for application data, faculty Google Drive for Docs, Sheets and evidence. (Recommended)
+
+Google Drive for almost everything.
+
+2\. How should students access examinations?
+
+Unique link + name + roll number. No student account. (Recommended for MVP)
+
+Unique link + name + roll number + OTP verification.
+
+Permanent student login accounts.
+
+3\. What level of malpractice monitoring?
+
+Basic — tab switching and fullscreen events. (Recommended initially)
+
+Camera — basic monitoring and optional evidence snapshots.
+
+Advanced — camera, face detection and multiple monitoring signals.
+
+4\. Who should see student results?
+
+Faculty only; faculty decides whether students can see results. (Recommended)
+
+Students can automatically see their own results after submission.
+
+Both, with faculty control over result publication.
+
+5\. How should AI evaluation run?
+
+Local/open-source AI on our own server. (Recommended for cost control, subject to hardware)
+
+External AI APIs.
+
+Hybrid — local processing where practical, external APIs when needed.
+
+Confirm architecture decisions
+
+Once these are settled, the next deliverable should be a complete master development prompt containing the product requirements, database schema, API endpoints, screen-by-screen UI instructions, Google integration workflow, AI evaluation logic, security rules, deployment architecture and phased implementation instructions.

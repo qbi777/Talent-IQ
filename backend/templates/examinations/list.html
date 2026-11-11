@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Examinations Catalog | Talent IQ{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-apple-border/40">
+        <div>
+            <h1 class="text-3xl font-bold tracking-tight text-apple-text">Standardized Examinations</h1>
+            <p class="text-apple-secondary text-sm mt-1">Select an active assessment session to begin with real-time AI proctoring.</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        {% for exam in examinations %}
+        <div class="bg-white rounded-2xl border border-apple-border/60 p-6 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between">
+            <div>
+                <div class="flex items-center justify-between gap-2 mb-3">
+                    <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-50 text-apple-blue border border-blue-100">
+                        {{ exam.get_exam_type_display }}
+                    </span>
+                    <span class="text-xs font-mono text-apple-secondary">
+                        {{ exam.code }}
+                    </span>
+                </div>
+                <h3 class="text-lg font-bold text-apple-text mb-2">{{ exam.title }}</h3>
+                <p class="text-xs text-apple-secondary line-clamp-2 mb-4">{{ exam.description|default:"Standard institutional evaluation module for engineering and technical competencies." }}</p>
+                
+                <div class="flex flex-wrap gap-2 text-xs text-apple-secondary mb-4">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded bg-apple-bg border border-apple-border/40">⏱ {{ exam.duration_minutes }} mins</span>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded bg-apple-bg border border-apple-border/40">🏆 {{ exam.total_marks }} marks</span>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded bg-apple-bg border border-apple-border/40">🛡 AI Camera Proctored</span>
+                </div>
+            </div>
+
+            <div class="pt-4 border-t border-apple-border/30 flex items-center justify-between">
+                <a href="/examinations/{{ exam.code }}/" class="text-xs font-medium text-apple-secondary hover:text-apple-text transition-colors">
+                    View Syllabus & Rules &rarr;
+                </a>
+                <a href="/examinations/{{ exam.code }}/take/" class="px-4 py-2 rounded-xl bg-apple-blue hover:bg-apple-hover text-white text-xs font-semibold shadow-xs transition-colors">
+                    Start Exam
+                </a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full py-12 text-center bg-white rounded-2xl border border-apple-border/60">
+            <p class="text-apple-secondary text-sm">No active assessments found.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

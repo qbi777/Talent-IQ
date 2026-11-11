@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}{{ exam.title }} | Talent IQ{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto space-y-6">
+    <div class="bg-white rounded-3xl border border-apple-border/60 p-6 sm:p-8 shadow-xs">
+        <div class="border-b border-apple-border/40 pb-6 mb-6">
+            <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-50 text-apple-blue border border-blue-100">
+                {{ exam.get_exam_type_display }}
+            </span>
+            <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-apple-text mt-3">{{ exam.title }}</h1>
+            <p class="text-sm font-mono text-apple-secondary mt-1">Code: {{ exam.code }}</p>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
+            <div class="p-4 rounded-2xl bg-apple-bg border border-apple-border/40">
+                <span class="text-xs text-apple-secondary block">Duration</span>
+                <span class="text-xl font-bold text-apple-text mt-1 block">{{ exam.duration_minutes }} Minutes</span>
+            </div>
+            <div class="p-4 rounded-2xl bg-apple-bg border border-apple-border/40">
+                <span class="text-xs text-apple-secondary block">Total Marks</span>
+                <span class="text-xl font-bold text-apple-blue mt-1 block">{{ exam.total_marks }} Pts</span>
+            </div>
+            <div class="p-4 rounded-2xl bg-apple-bg border border-apple-border/40">
+                <span class="text-xs text-apple-secondary block">Passing Criteria</span>
+                <span class="text-xl font-bold text-emerald-600 mt-1 block">{{ exam.passing_marks }} Pts</span>
+            </div>
+        </div>
+
+        <div class="prose text-sm text-apple-text mb-8">
+            <h3 class="font-bold text-base mb-2">Instructions & Proctoring Rules:</h3>
+            <ul class="list-disc pl-5 space-y-1.5 text-apple-secondary">
+                <li>Candidates must grant camera and microphone permissions before the session starts.</li>
+                <li>Tab switching, window minimization, or secondary screens will be flagged automatically.</li>
+                <li>Exceeding 3 critical violations will automatically disqualify the examination session.</li>
+                <li>All submissions are synced directly with the Tamil Nadu State Institutional Repository and Google Drive.</li>
+            </ul>
+        </div>
+
+        <div class="flex items-center justify-between pt-6 border-t border-apple-border/40">
+            <a href="/examinations/" class="text-xs text-apple-secondary hover:text-apple-text font-medium">&larr; Back to Catalog</a>
+            <a href="/examinations/{{ exam.code }}/take/" class="px-6 py-2.5 rounded-full bg-apple-blue hover:bg-apple-hover text-white text-sm font-semibold shadow-sm transition-all">
+                Enter Exam Session &rarr;
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

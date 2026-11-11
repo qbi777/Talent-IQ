@@ -1,0 +1,6 @@
+{
+  "name": "EvalPulse - Tamil Nadu College Assessment SaaS",
+  "description": "Multi-college online assessment platform with faculty Google Drive integration, secure student test-taking, tab-switch proctoring, AI rubric evaluation, and institutional rankings across Tamil Nadu districts.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

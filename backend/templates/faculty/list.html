@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Faculty Directory | Talent IQ{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="pb-4 border-b border-apple-border/40">
+        <h1 class="text-3xl font-bold tracking-tight text-apple-text">Faculty Directory</h1>
+        <p class="text-apple-secondary text-sm mt-1">Verified educators and examination evaluators in the Talent IQ network.</p>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-apple-border/60 shadow-2xs overflow-hidden">
+        <table class="w-full text-left text-xs">
+            <thead class="bg-apple-bg text-apple-secondary uppercase font-semibold border-b border-apple-border/40">
+                <tr>
+                    <th class="px-6 py-3">Faculty Name</th>
+                    <th class="px-6 py-3">Department</th>
+                    <th class="px-6 py-3">Institution</th>
+                    <th class="px-6 py-3">Designation</th>
+                    <th class="px-6 py-3">Employee ID</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-apple-border/30">
+                {% for fac in faculty_members %}
+                <tr class="hover:bg-apple-bg/50">
+                    <td class="px-6 py-4 font-semibold text-apple-text">{{ fac.user.get_full_name|default:fac.user.username }}</td>
+                    <td class="px-6 py-4 text-apple-secondary">{{ fac.get_department_display }}</td>
+                    <td class="px-6 py-4 text-apple-text">{{ fac.college.name }}</td>
+                    <td class="px-6 py-4 text-apple-secondary">{{ fac.designation }}</td>
+                    <td class="px-6 py-4 font-mono text-apple-blue">{{ fac.employee_id }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="px-6 py-8 text-center text-apple-secondary">No faculty profiles found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

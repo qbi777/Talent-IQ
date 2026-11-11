@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Institutions Directory | Talent IQ{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-4 border-b border-apple-border/40">
+        <div>
+            <div class="inline-flex items-center space-x-2 text-xs font-semibold uppercase tracking-wider text-apple-blue mb-1">
+                <span>Tamil Nadu Engineering & Technology Network</span>
+            </div>
+            <h1 class="text-3xl font-bold tracking-tight text-apple-text">Participating Institutions</h1>
+            <p class="text-apple-secondary text-sm mt-1">Autonomous, Government, and Affiliated Colleges participating in Talent IQ standardized evaluations.</p>
+        </div>
+        <div class="flex items-center space-x-2">
+            <span class="text-xs text-apple-secondary bg-white px-3 py-1.5 rounded-full border border-apple-border/60 shadow-2xs">
+                Total Colleges: <strong class="text-apple-text">{{ total_count }}</strong>
+            </span>
+        </div>
+    </div>
+
+    <!-- College Cards Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        {% for college in colleges %}
+        <div class="bg-white rounded-2xl border border-apple-border/60 p-5 shadow-2xs hover:shadow-md hover:border-apple-blue/40 transition-all flex flex-col justify-between">
+            <div>
+                <div class="flex items-start justify-between gap-2 mb-2">
+                    <span class="text-xs font-semibold px-2 py-0.5 rounded-md bg-blue-50 text-apple-blue border border-blue-100">
+                        {{ college.college_type }}
+                    </span>
+                    <span class="text-xs font-bold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-100">
+                        NAAC {{ college.naac_grade }}
+                    </span>
+                </div>
+                <h3 class="font-semibold text-base text-apple-text line-clamp-2 mb-1">
+                    <a href="/colleges/{{ college.college_id }}/" class="hover:text-apple-blue transition-colors">
+                        {{ college.name }}
+                    </a>
+                </h3>
+                <p class="text-xs text-apple-secondary flex items-center gap-1 mb-4">
+                    <svg class="w-3.5 h-3.5 text-apple-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    {{ college.city }}, {{ college.district }}
+                </p>
+            </div>
+
+            <div class="pt-4 border-t border-apple-border/30 flex items-center justify-between text-xs">
+                <div>
+                    <span class="text-apple-secondary block">Assessed</span>
+                    <span class="font-semibold text-apple-text">{{ college.total_students_assessed }} candidates</span>
+                </div>
+                <div class="text-right">
+                    <span class="text-apple-secondary block">Average Score</span>
+                    <span class="font-bold text-apple-blue text-sm">{{ college.average_score }}%</span>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full py-12 text-center bg-white rounded-2xl border border-apple-border/60">
+            <p class="text-apple-secondary text-sm">No institutions registered in the database yet.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

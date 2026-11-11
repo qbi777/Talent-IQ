@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Talent IQ | Institutional Assessment & Proctoring{% endblock %}</title>
+    <!-- Tailwind CSS CDN for Django MVT templates -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        apple: {
+                            blue: '#0071e3',
+                            hover: '#0077ed',
+                            bg: '#f5f5f7',
+                            card: '#ffffff',
+                            text: '#1d1d1f',
+                            secondary: '#86868b',
+                            border: '#d2d2d7',
+                            green: '#34c759',
+                            amber: '#ff9500',
+                            red: '#ff3b30'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Display"', '"SF Pro Text"', '"Helvetica Neue"', 'Helvetica', 'Arial', 'sans-serif'],
+                    },
+                    borderRadius: {
+                        '2xl': '18px',
+                        '3xl': '24px',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #f5f5f7;
+            color: #1d1d1f;
+            -webkit-font-smoothing: antialiased;
+            letter-spacing: -0.011em;
+        }
+        .apple-glass {
+            background: rgba(255, 255, 255, 0.82);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(210, 210, 215, 0.6);
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="min-h-screen flex flex-col font-sans">
+    <!-- Apple-style Navigation Bar -->
+    <header class="sticky top-0 z-50 apple-glass">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
+            <div class="flex items-center space-x-6">
+                <a href="/" class="flex items-center space-x-2.5">
+                    <div class="w-8 h-8 rounded-xl bg-[#0071e3] flex items-center justify-center shadow-sm">
+                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 14l9-5-9-5-9 5 9 5z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+                        </svg>
+                    </div>
+                    <span class="font-semibold text-lg tracking-tight text-[#1d1d1f]">Talent IQ</span>
+                </a>
+                <nav class="hidden md:flex space-x-5 text-sm font-medium text-apple-secondary">
+                    <a href="/" class="hover:text-apple-text transition-colors">Institutions</a>
+                    <a href="/examinations/" class="hover:text-apple-text transition-colors">Examinations</a>
+                    <a href="/faculty/" class="hover:text-apple-text transition-colors">Faculty Portal</a>
+                    <a href="/admin/" class="hover:text-apple-text transition-colors">Django Admin</a>
+                </nav>
+            </div>
+            <div class="flex items-center space-x-3">
+                <a href="/api/colleges/" class="text-xs font-medium px-3 py-1.5 rounded-full bg-black/5 hover:bg-black/10 transition-colors text-apple-text">REST APIs</a>
+                <a href="/examinations/" class="text-xs font-semibold px-3.5 py-1.5 rounded-full bg-apple-blue hover:bg-apple-hover text-white shadow-sm transition-all">Student Portal</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow max-w-6xl mx-auto w-full px-4 sm:px-6 py-8">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Apple-style Clean Footer -->
+    <footer class="border-t border-[#d2d2d7]/50 bg-white/50 text-apple-secondary text-xs py-6 mt-12">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row items-center justify-between gap-4">
+            <p>&copy; 2026 Talent IQ. All rights reserved. Tamil Nadu State Assessment Network.</p>
+            <div class="flex space-x-6">
+                <span>Django 5.0 MVT Backend</span>
+                <span>AI Proctoring Core</span>
+                <span>Gemini Rubric Engine</span>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
